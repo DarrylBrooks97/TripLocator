@@ -82,7 +82,7 @@ export default function Home(): ReactJSXElement {
 		}
 	};
 
-	const addTrip = async () => {
+	const addTrip = async () => {		
 		if (location.length === 0 || location.length < 5) {
 			toast({
 				title: 'Error!',
@@ -126,7 +126,13 @@ export default function Home(): ReactJSXElement {
 					isClosable: true,
 				});
 			} else {
-				console.log("Ethereum object doesn't exist!");
+				toast({
+					title: 'Error!',
+					description: 'Please sign in and refesh before adding a trip',
+					status: 'error',
+					duration: 3000,
+					isClosable: true,
+				});
 			}
 		} catch (error) {
 			console.log(error);
@@ -190,7 +196,7 @@ export default function Home(): ReactJSXElement {
 
 	return (
 		<Box w="full" h="auto" position="relative" bgColor="#EEF0F2">
-			{!connect && (
+			{!connect ?
 				<Button
 					position="absolute"
 					borderRadius="25px"
@@ -200,9 +206,7 @@ export default function Home(): ReactJSXElement {
 					onClick={connectWallet}
 				>
 					<Text color="white">Connect</Text>
-				</Button>
-			)}
-			{connect ? (
+				</Button>:
 				<Box w="50px">
 					<Button
 						position="absolute"
@@ -215,8 +219,7 @@ export default function Home(): ReactJSXElement {
 							{account}
 						</Text>
 					</Button>
-				</Box>
-			) : null}
+				</Box>}
 			<Modal isOpen={isOpen} onClose={onClose}>
 				<ModalOverlay />
 				<ModalContent>
@@ -260,7 +263,6 @@ export default function Home(): ReactJSXElement {
 					<Center>
 						<Grid templateColumns="repeat(3, 450px)" gap={3}>
 							{allLocations.map((wave: any, index: number) => {
-								console.log({ hashLink });
 								return (
 									<GridItem
 										key={index}
