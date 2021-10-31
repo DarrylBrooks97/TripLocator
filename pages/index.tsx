@@ -26,9 +26,9 @@ import {
 } from '@chakra-ui/react';
 
 export default function Home(): ReactJSXElement {
+	const toast = useToast();
 	const contractABI = TripPortalFile.abi;
 	const { isOpen, onOpen, onClose } = useDisclosure();
-	const toast = useToast();
 	const [connect, setConnect] = useState<boolean>(false);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [account, setAccount] = useState<any>(null);
@@ -82,7 +82,7 @@ export default function Home(): ReactJSXElement {
 		}
 	};
 
-	const addTrip = async () => {		
+	const addTrip = async () => {
 		if (location.length === 0 || location.length < 5) {
 			toast({
 				title: 'Error!',
@@ -96,7 +96,7 @@ export default function Home(): ReactJSXElement {
 		try {
 			const { ethereum }: any = window;
 			const contractAddress =
-				'0x6A560F33C8778c11cB0db77cA7bF15e659Ba65aE';
+				'0x90a331afdfB7d9A0382892bC6Ea34cD7CFcCf7B6';
 
 			if (ethereum) {
 				const provider = new ethers.providers.Web3Provider(ethereum);
@@ -107,7 +107,9 @@ export default function Home(): ReactJSXElement {
 					signer
 				);
 
-				const tripTxn = await tripPortalContract.addTrip(location);
+				const tripTxn = await tripPortalContract.addTrip(location, {
+					gasLimit: 300000,
+				});
 				console.log('Mining...', tripTxn.hash);
 
 				setLoading(true);
@@ -115,7 +117,6 @@ export default function Home(): ReactJSXElement {
 				console.log('Mined -- ', tripTxn.hash);
 				onOpen();
 				setHashLink('https://rinkeby.etherscan.io/tx/' + tripTxn.hash);
-				setLoading(false);
 				setAllLocations(await tripPortalContract.getAllTrips());
 
 				toast({
@@ -128,26 +129,28 @@ export default function Home(): ReactJSXElement {
 			} else {
 				toast({
 					title: 'Error!',
-					description: 'Please sign in and refesh before adding a trip',
+					description:
+						'Please sign in and refesh before adding a trip',
 					status: 'error',
 					duration: 3000,
 					isClosable: true,
 				});
 			}
-		} catch (error) {
-			console.log(error);
+		} catch (error: any) {
+			console.log({ error });
 			toast({
 				title: 'Error!',
-				description: `${error}`,
+				description: `${error.reason}`,
 				status: 'error',
 				duration: 3000,
 				isClosable: true,
 			});
 		}
+		setLoading(false);
 	};
 
 	const getAllLocations = async () => {
-		const contractAddress = '0x6A560F33C8778c11cB0db77cA7bF15e659Ba65aE';
+		const contractAddress = '0x90a331afdfB7d9A0382892bC6Ea34cD7CFcCf7B6';
 		try {
 			const { ethereum }: any = window;
 			if (ethereum) {
@@ -196,7 +199,7 @@ export default function Home(): ReactJSXElement {
 
 	return (
 		<Box w="full" h="auto" position="relative" bgColor="#EEF0F2">
-			{!connect ?
+			{!connect ? (
 				<Button
 					position="absolute"
 					borderRadius="25px"
@@ -206,7 +209,8 @@ export default function Home(): ReactJSXElement {
 					onClick={connectWallet}
 				>
 					<Text color="white">Connect</Text>
-				</Button>:
+				</Button>
+			) : (
 				<Box w="50px">
 					<Button
 						position="absolute"
@@ -219,7 +223,8 @@ export default function Home(): ReactJSXElement {
 							{account}
 						</Text>
 					</Button>
-				</Box>}
+				</Box>
+			)}
 			<Modal isOpen={isOpen} onClose={onClose}>
 				<ModalOverlay />
 				<ModalContent>
@@ -243,7 +248,7 @@ export default function Home(): ReactJSXElement {
 			<Flex justifyContent="center" alignItems="center" pt="10%">
 				<Stack w="80%" flexDirection="column" spacing={5}>
 					<Center>
-						<Heading color="black">Trip Planner</Heading>
+						<Heading color="black">Trip Adder</Heading>
 					</Center>
 					<Input
 						placeholder="Enter a location"
